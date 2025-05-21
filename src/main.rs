@@ -3,6 +3,14 @@
 //  -f = "./src/main.rs, ./src/test.rs"
 //  -d = "./src" -e = "rs, js, html"
 
+mod config;
+
+use config::Configuration;
+use std::env;
+
 fn main() {
-    println!("Hello, world!");
+    let args: Vec<String> = env::args().skip(1).collect();
+    let config = Configuration::new(args);
+
+    println!("{:?}", config);
 }
