@@ -1,3 +1,5 @@
+use std::fs;
+
 // Structs
 #[derive(Debug)]
 pub struct Configuration {
@@ -16,6 +18,7 @@ impl Configuration {
         };
 
         config.parse_args(args);
+        config.verify_files_exist();
 
         config
     }
@@ -49,4 +52,24 @@ impl Configuration {
             }
         }
     }
+
+    fn verify_files_exist(&mut self) {
+        self.file_names = self
+            .file_names
+            .iter()
+            .filter(|filename| {
+                if let Ok(data) = fs::metadata(filename) {
+                    if data.is_file() {
+                        return true;
+                    }
+                }
+
+                eprintln!("WARNING: File `{}` does not exist, skipping.", filename);
+                false
+            })
+            .map(|s| s.into())
+            .collect::<Vec<String>>();
+    }
+
+    fn find_files_in_dir_with_ext(&mut self) {}
 }
