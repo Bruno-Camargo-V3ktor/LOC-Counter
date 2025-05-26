@@ -18,7 +18,13 @@ fn main() {
 
     for file in &config.file_names {
         let file_content = read_file(file).expect(&format!("Cound not read file {}", file));
-        println!("File: {} contains: {}", file, file_content.len());
+        let loc = file_content
+            .iter()
+            .filter(|line| is_code_line(&line))
+            .collect::<Vec<_>>()
+            .len();
+
+        println!("-- File: `{}` contains: {} LOC", file, loc);
     }
 
     //println!("{:?}", config);
@@ -31,4 +37,13 @@ fn read_file(file_name: &str) -> Result<Vec<String>, ()> {
     } else {
         Err(())
     }
+}
+
+fn is_code_line(line: &str) -> bool {
+    let line = line.trim();
+    if line.len() == 0 || line.starts_with("//") {
+        return false;
+    }
+
+    true
 }
