@@ -17,10 +17,11 @@ fn main() {
     let config = Configuration::new(args);
 
     for file in &config.file_names {
-        let file_content = read_file(file).expect(&format!("Cound not read file {}", file));
+        let file_content =
+            read_file(file).unwrap_or_else(|_| panic!("Cound not read file {}", file));
         let loc = file_content
             .iter()
-            .filter(|line| is_code_line(&line))
+            .filter(|line| is_code_line(line))
             .collect::<Vec<_>>()
             .len();
 
@@ -33,7 +34,7 @@ fn main() {
 fn read_file(file_name: &str) -> Result<Vec<String>, ()> {
     if let Ok(file) = File::open(file_name) {
         let reader = BufReader::new(file);
-        Ok(reader.lines().map(|l| l.unwrap_or(String::new())).collect())
+        Ok(reader.lines().map(|l| l.unwrap_or_default()).collect())
     } else {
         Err(())
     }
@@ -41,7 +42,7 @@ fn read_file(file_name: &str) -> Result<Vec<String>, ()> {
 
 fn is_code_line(line: &str) -> bool {
     let line = line.trim();
-    if line.len() == 0 || line.starts_with("//") {
+    if line.is_empty() || line.starts_with("//") {
         return false;
     }
 
