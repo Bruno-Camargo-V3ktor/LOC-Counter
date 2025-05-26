@@ -1,5 +1,7 @@
 use std::fs;
 
+use walkdir::WalkDir;
+
 // Structs
 #[derive(Debug)]
 pub struct Configuration {
@@ -18,6 +20,7 @@ impl Configuration {
         };
 
         config.parse_args(args);
+        config.find_files_in_dir_with_ext();
         config.verify_files_exist();
 
         config
@@ -71,5 +74,29 @@ impl Configuration {
             .collect::<Vec<String>>();
     }
 
-    fn find_files_in_dir_with_ext(&mut self) {}
+    fn find_files_in_dir_with_ext(&mut self) {
+        for root_dir in &self.dirs {
+            for entry in WalkDir::new(root_dir) {
+                let entry = match entry {
+                    Ok(dir_entry) => dir_entry,
+                    Err(err) => {
+                        eprintln!("WARNING: Could not access {}, error: {:?}", root_dir, err);
+                        continue;
+                    }
+                };
+
+                //println!("Cur entry: {:?}", entry);
+                if let Some(ext) = entry.path().extension() {
+                    let extension = ext.to_str().unwrap().to_string();
+                    if !self.file_extensions.contains(&extension) {
+                        continue;
+                    }
+
+                    if let Some(cur_file_name) = entry.path().to_str().map(|s| s.to_string()) {
+                        self.file_names.push(cur_file_name);
+                    }
+                }
+            }
+        }
+    }
 }
